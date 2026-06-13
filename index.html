@@ -1,182 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scorpion</title>
+<meta charset="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Scorpion | Premium Men's Wear</title>
 <style>
-  /* Premium Theme Setup */
-  :root { --bg: #0a0a0a; --gold: #D4AF37; --dark: #1a1a1a; --text: #f0f0f0; }
-  body { margin: 0; font-family: 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  /* Premium App Wrapper */
+  :root { --bg: #050505; --gold: #D4AF37; --gold-light: #F3E5AB; --dark: #121212; --text: #f0f0f0; --grey: #888; }
+  body { margin: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; }
   
-  /* Header & Navigation */
-  header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--dark); position: sticky; top: 0; z-index: 100; }
-  .logo { font-family: 'Georgia', serif; font-size: 28px; font-weight: bold; font-style: italic; color: var(--gold); }
-  .icons span { font-size: 22px; margin-left: 15px; cursor: pointer; color: var(--text); }
-  
-  /* Sidebar Menu */
-  .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; }
-  .menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: var(--dark); transition: 0.3s; z-index: 1001; padding: 20px; box-sizing: border-box; }
+  .app-container { width: 100%; max-width: 430px; background: var(--bg); min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(255, 215, 0, 0.05); color: var(--text); overflow-x: hidden; }
+
+  /* Glassmorphism Header */
+  header { position: sticky; top: 0; background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid #1a1a1a; }
+  .logo { font-family: 'Georgia', serif; font-size: 26px; font-weight: bold; font-style: italic; background: linear-gradient(45deg, var(--gold), var(--gold-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .icons { display: flex; gap: 15px; font-size: 22px; color: var(--gold); cursor: pointer; }
+
+  /* App Screens */
+  .screen { display: none; padding: 15px; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Inputs & Buttons */
+  input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; background: var(--dark); color: #fff; border: 1px solid #222; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; transition: 0.3s; }
+  input:focus, textarea:focus { border-color: var(--gold); }
+  .btn-gold { width: 100%; padding: 16px; background: linear-gradient(45deg, var(--gold), #b5952f); color: #000; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); transition: 0.2s; }
+  .btn-gold:active { transform: scale(0.98); }
+
+  /* Slide Menu */
+  .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; backdrop-filter: blur(5px); }
+  .menu { position: absolute; top: 0; left: -100%; width: 75%; height: 100%; background: var(--dark); transition: 0.3s; z-index: 1001; padding: 25px; box-sizing: border-box; border-right: 1px solid #222; }
   .menu.open { left: 0; }
-  .menu h3 { color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; }
-  .menu-item { padding: 15px 0; border-bottom: 1px solid #333; font-size: 16px; cursor: pointer; }
-  
-  /* Login Flow inside Menu */
+  .menu h3 { color: var(--gold); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px; }
+  .menu-item { padding: 18px 0; border-bottom: 1px solid #222; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+
+  /* Login Flow */
   .login-step { display: none; }
   .login-step.active { display: block; }
-  input { width: 100%; padding: 12px; margin: 10px 0; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; }
-  .btn-gold { width: 100%; padding: 12px; background: var(--gold); color: #000; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; }
-  
-  /* Screens */
-  .screen { display: none; padding: 15px; }
-  .screen.active { display: block; }
 
-  /* Home Screen UI */
-  .banner { width: 100%; height: 200px; background: #333; border-radius: 10px; margin-bottom: 20px; object-fit: cover; }
-  .categories { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
-  .cat-circle { min-width: 70px; height: 70px; border-radius: 50%; background: #333; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 12px; }
-  .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-  .prod-card { background: var(--dark); padding: 10px; border-radius: 8px; text-align: center; }
-  .prod-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; }
-
-  /* Product View UI */
-  .prod-view-img { width: 100%; height: 60vh; object-fit: cover; border-radius: 10px; }
-  .sizes { display: flex; gap: 10px; margin: 15px 0; }
-  .size-box { width: 40px; height: 40px; border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; border-radius: 5px; }
-  .size-box.unavailable { text-decoration: line-through; color: #666; border-color: #444; }
-  .price-actual { text-decoration: line-through; color: #888; font-size: 16px; }
-  .price-discount { color: var(--gold); font-size: 28px; font-weight: bold; }
-  .action-buttons { display: flex; gap: 10px; position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px; background: var(--dark); box-sizing: border-box; }
+  /* Home Elements */
+  .banner { width: 100%; height: 180px; border-radius: 12px; margin-bottom: 20px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+  .categories { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-circle { min-width: 75px; height: 75px; border-radius: 50%; background: var(--dark); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; transition: 0.3s; cursor: pointer; }
+  .cat-circle.active { border-color: var(--gold); color: var(--gold); }
   
-  /* Order Place UI */
-  .receipt { background: var(--dark); padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace; font-size: 16px; }
-  .receipt-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .total-row { border-top: 1px dashed var(--gold); border-bottom: 1px dashed var(--gold); padding: 10px 0; font-size: 22px; font-weight: bold; color: var(--gold); margin-top: 10px; }
+  /* Product Grid */
+  .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+  .prod-card { background: var(--dark); border-radius: 12px; overflow: hidden; position: relative; }
+  .prod-card img { width: 100%; height: 220px; object-fit: cover; }
+  .prod-info { padding: 10px; }
+  .prod-title { font-size: 14px; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ccc; }
+  .prod-price { color: var(--gold); font-weight: bold; font-size: 16px; }
+
+  /* Product View */
+  .back-btn { color: var(--grey); font-size: 16px; margin-bottom: 15px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+  .prod-view-img { width: 100%; height: 50vh; object-fit: cover; border-radius: 12px; }
+  .sizes { display: flex; gap: 12px; margin: 20px 0; }
+  .size-box { flex: 1; height: 45px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .size-box.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); color: var(--gold); }
+  .size-box.unavailable { text-decoration: line-through; color: #444; border-color: #222; cursor: not-allowed; }
+  
+  .price-section { margin: 15px 0; padding: 15px; background: var(--dark); border-radius: 12px; }
+  .price-actual { text-decoration: line-through; color: var(--grey); font-size: 14px; }
+  .discount-badge { background: #25D366; color: #000; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; vertical-align: top; margin-left: 5px; }
+  .price-discount { color: var(--gold); font-size: 32px; font-weight: 800; margin-top: 5px; }
+
+  /* Floating Bottom Bar */
+  .bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(10px); box-sizing: border-box; display: flex; gap: 15px; border-top: 1px solid #222; }
+  .btn-outline { flex: 1; padding: 16px; background: transparent; color: var(--gold); font-weight: bold; border: 1px solid var(--gold); border-radius: 8px; cursor: pointer; }
+  
+  /* Order Receipt & Payment */
+  .receipt { background: var(--dark); padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 14px; border: 1px solid #222; }
+  .receipt-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: #ccc; }
+  .total-row { border-top: 1px solid #333; padding-top: 15px; font-size: 20px; font-weight: bold; color: var(--gold); margin-top: 5px; }
+  
+  .payment-methods { margin-top: 20px; background: var(--dark); padding: 15px; border-radius: 12px; border: 1px solid #222; }
+  .pay-option { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; cursor: pointer; }
+  .pay-option:last-child { border-bottom: none; }
+  .pay-option input { width: auto; margin-right: 15px; accent-color: var(--gold); transform: scale(1.3); }
+
 </style>
 </head>
 <body>
 
-<header>
-  <div onclick="openMenu()" style="cursor: pointer; font-size: 24px;">☰</div>
-  <div class="logo">Scorpion</div>
-  <div class="icons">
-    <span>🔍</span>
-    <span onclick="alert('Cart View Coming Soon')">🛒</span>
-  </div>
-</header>
+<div class="app-container">
 
-<div class="overlay" id="overlay" onclick="closeMenu()"></div>
-<div class="menu" id="sideMenu">
-  <div style="text-align: right; cursor: pointer; color: var(--gold); font-size: 24px;" onclick="closeMenu()">✖</div>
-  <h3 id="menuName">Login</h3>
-  
-  <div id="loginFlow">
-    <div class="login-step active" id="step1">
-      <input type="text" id="uName" placeholder="Enter Name">
-      <button class="btn-gold" onclick="nextLoginStep(2)">Next</button>
+  <header>
+    <div onclick="openMenu()" style="cursor: pointer; font-size: 24px;">☰</div>
+    <div class="logo">Scorpion</div>
+    <div class="icons">
+      <span>🔍</span>
+      <span onclick="alert('Cart Screen Coming Next!')">🛒</span>
     </div>
-    <div class="login-step" id="step2">
-      <input type="email" id="uEmail" placeholder="Enter Email">
-      <button class="btn-gold" onclick="sendOTP()">Send OTP</button>
-      <input type="number" id="uOtp" placeholder="Enter OTP" style="display:none; margin-top:15px;">
-      <button class="btn-gold" id="loginBtn" style="display:none;" onclick="completeLogin()">Login</button>
+  </header>
+
+  <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+  <div class="menu" id="sideMenu">
+    <div style="text-align: right; cursor: pointer; color: var(--grey); font-size: 24px;" onclick="closeMenu()">✖</div>
+    <h3 id="menuName">Sign In</h3>
+    
+    <div id="loginFlow">
+      <div class="login-step active" id="step1">
+        <input type="text" id="uName" placeholder="Full Name">
+        <button class="btn-gold" style="margin-top: 10px;" onclick="nextLoginStep()">Continue</button>
+      </div>
+      <div class="login-step" id="step2">
+        <input type="email" id="uEmail" placeholder="Email Address">
+        <button class="btn-gold" style="margin-top: 10px;" onclick="sendOTP()">Send OTP</button>
+        <input type="number" id="uOtp" placeholder="Enter OTP" style="display:none; margin-top:20px;">
+        <button class="btn-gold" id="loginBtn" style="display:none; margin-top: 10px;" onclick="completeLogin()">Verify & Login</button>
+      </div>
+    </div>
+
+    <div id="loggedInMenu" style="display: none;">
+      <div class="menu-item">📦 My Orders <span>›</span></div>
+      <div class="menu-item">📍 Saved Addresses <span>+</span></div>
+      <div class="menu-item">⚙️ Settings <span>›</span></div>
+      <div class="menu-item" style="color: #ff4444; border-bottom: none;" onclick="location.reload()">Sign Out</div>
     </div>
   </div>
 
-  <div id="loggedInMenu" style="display: none;">
-    <div class="menu-item">📦 Order History</div>
-    <div class="menu-item">📍 Saved Addresses <span style="float: right; color: var(--gold);">+</span></div>
-    <div class="menu-item" style="color: red; margin-top: 30px;" onclick="location.reload()">Sign Out</div>
-  </div>
+  <main id="homeScreen" class="screen active">
+    <img src="https://i.ibb.co/3s6Z1QZ/black-bg-gold.jpg" onerror="this.src='https://via.placeholder.com/600x300/121212/D4AF37?text=Scorpion+Collection'" class="banner" alt="Offers Banner">
+    
+    <div class="categories">
+      <div class="cat-circle active">Casual</div>
+      <div class="cat-circle">Party</div>
+      <div class="cat-circle">Formal</div>
+      <div class="cat-circle">Wedding</div>
+    </div>
+
+    <div class="product-grid">
+      <div class="prod-card" onclick="viewProduct()">
+        <img src="https://via.placeholder.com/400x500/1a1a1a/D4AF37?text=Silk+Shirt" alt="Dress">
+        <div class="prod-info">
+          <p class="prod-title">Premium Black Silk Shirt</p>
+          <div class="prod-price">₹600</div>
+        </div>
+      </div>
+      <div class="prod-card" onclick="viewProduct()">
+        <img src="https://via.placeholder.com/400x500/1a1a1a/D4AF37?text=Tuxedo" alt="Dress">
+        <div class="prod-info">
+          <p class="prod-title">Velvet Finish Tuxedo</p>
+          <div class="prod-price">₹2500</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <main id="productScreen" class="screen">
+    <div class="back-btn" onclick="showScreen('homeScreen')">‹ Back to Shop</div>
+    <img src="https://via.placeholder.com/800x1000/1a1a1a/D4AF37?text=Silk+Shirt" class="prod-view-img">
+    
+    <div class="price-section">
+      <div style="color: #fff; font-size: 18px; margin-bottom: 5px;">Premium Black Silk Shirt</div>
+      <span class="price-actual">₹1200</span> <span class="discount-badge">50% OFF</span>
+      <div class="price-discount">₹600</div>
+    </div>
+
+    <p style="color: var(--grey); font-size: 14px; line-height: 1.5;">Handcrafted with premium materials designed for the modern fit. Perfect for evening wear and special occasions.</p>
+    
+    <div style="font-weight: bold; margin-top: 20px;">Select Size</div>
+    <div class="sizes">
+      <div class="size-box" onclick="selectSize(this)">M</div>
+      <div class="size-box selected" onclick="selectSize(this)">L</div>
+      <div class="size-box unavailable">XL</div> 
+      <div class="size-box" onclick="selectSize(this)">XXL</div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-outline" onclick="alert('Added to Cart')">Add to Cart</button>
+      <button class="btn-gold" style="flex: 2;" onclick="showScreen('checkoutScreen')">Buy Now</button>
+    </div>
+  </main>
+
+  <main id="checkoutScreen" class="screen">
+    <div class="back-btn" onclick="showScreen('productScreen')">‹ Back to Product</div>
+    <h2 style="margin-top: 0;">Checkout</h2>
+
+    <div class="receipt">
+      <div class="receipt-row"><span>Item Total</span> <span>₹1200</span></div>
+      <div class="receipt-row"><span>Brand Discount</span> <span style="color: #25D366;">-₹600</span></div>
+      <div class="receipt-row"><span>Delivery Fee</span> <span>FREE</span></div>
+      <div class="receipt-row"><span>Platform Fee</span> <span>₹3</span></div>
+      <div class="total-row receipt-row"><span>Grand Total</span> <span>₹603</span></div>
+    </div>
+
+    <h3 style="margin-bottom: 10px; font-size: 16px;">Shipping Details</h3>
+    <input type="text" id="chkName" placeholder="Full Name">
+    <input type="number" id="chkMobile" placeholder="Mobile Number (Required)">
+    <textarea id="chkAddress" placeholder="Complete Delivery Address" rows="3"></textarea>
+
+    <h3 style="margin-bottom: 10px; font-size: 16px; margin-top: 20px;">Payment Method</h3>
+    <div class="payment-methods">
+      <label class="pay-option">
+        <input type="radio" name="paymentType" value="Cash on Delivery" checked> 
+        Cash on Delivery
+      </label>
+      <label class="pay-option">
+        <input type="radio" name="paymentType" value="UPI"> 
+        UPI (GPay, PhonePe, Paytm)
+      </label>
+      <label class="pay-option">
+        <input type="radio" name="paymentType" value="Credit/Debit Card"> 
+        Credit / Debit Card
+      </label>
+    </div>
+
+    <div class="bottom-bar" style="justify-content: center;">
+      <button class="btn-gold" id="finalOrderBtn" onclick="placeOrderWhatsApp()">Confirm & Place Order</button>
+    </div>
+  </main>
+
 </div>
 
-<main id="homeScreen" class="screen active">
-  <img src="https://via.placeholder.com/600x200/333/D4AF37?text=Scorpion+Premium+Collection" class="banner" alt="Offers Banner">
-  
-  <div class="categories">
-    <div class="cat-circle">Casual</div>
-    <div class="cat-circle">Party</div>
-    <div class="cat-circle">Formal</div>
-    <div class="cat-circle">Marriage</div>
-  </div>
-
-  <div class="product-grid">
-    <div class="prod-card" onclick="viewProduct()">
-      <img src="https://via.placeholder.com/300x400/222/fff?text=Premium+Shirt" alt="Dress">
-      <p style="margin: 10px 0 5px 0;">Premium Black Silk Shirt</p>
-      <span style="color: var(--gold); font-weight: bold;">₹600</span>
-    </div>
-  </div>
-</main>
-
-<main id="productScreen" class="screen" style="padding-bottom: 80px;">
-  <div onclick="showScreen('homeScreen')" style="color: var(--gold); margin-bottom: 15px; cursor: pointer;">← Back</div>
-  <img src="https://via.placeholder.com/600x800/222/fff?text=Premium+Shirt" class="prod-view-img">
-  
-  <div class="sizes">
-    <div class="size-box">M</div>
-    <div class="size-box">L</div>
-    <div class="size-box unavailable">XL</div> 
-    <div class="size-box">XXL</div>
-  </div>
-  
-  <p>Premium Black Silk Shirt. Handcrafted for the perfect fit.</p>
-  
-  <div>
-    <span class="price-actual">₹1200</span>
-    <span style="color: lightgreen; margin-left: 10px;">(50% off)</span>
-    <div class="price-discount">₹600</div>
-  </div>
-
-  <div class="action-buttons">
-    <button class="btn-gold" style="background: #333; color: white;" onclick="alert('Added to Cart')">Add to Cart</button>
-    <button class="btn-gold" onclick="showScreen('checkoutScreen')">Place Order</button>
-  </div>
-</main>
-
-<main id="checkoutScreen" class="screen" style="padding-bottom: 80px;">
-  <div onclick="showScreen('productScreen')" style="color: var(--gold); margin-bottom: 15px; cursor: pointer;">← Back</div>
-  <center><img src="https://via.placeholder.com/150/222/fff?text=Shirt" style="border-radius: 10px;"></center>
-
-  <div class="receipt">
-    <div class="receipt-row"><span>Actual Price</span> <span>1200 (50% off)</span></div>
-    <div class="receipt-row"><span>After Discount</span> <span>600</span></div>
-    <div class="receipt-row"><span>Delivery Charges</span> <span>0</span></div>
-    <div class="receipt-row"><span>Platform Fee</span> <span>3</span></div>
-    <div class="total-row receipt-row"><span>TOTAL</span> <span>₹603</span></div>
-  </div>
-
-  <h3>Delivery Details</h3>
-  <input type="text" id="chkName" placeholder="Full Name">
-  <input type="number" id="chkMobile" placeholder="Mobile Number (Compulsory)">
-  <input type="email" id="chkEmail" placeholder="Email Address">
-  <textarea id="chkAddress" placeholder="Full Address" rows="3" style="width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px;"></textarea>
-
-  <div class="action-buttons" id="checkoutActions">
-    <button class="btn-gold" onclick="confirmDetails()">Confirm Details</button>
-  </div>
-</main>
-
 <script>
-  // 👉 PASTE YOUR SCRIPT URL HERE (From your "Anyone" deployment)
+  // 👉 PASTE YOUR GOOGLE SCRIPT URL HERE
   const BACKEND_API_URL = "https://script.google.com/macros/s/AKfycbwx3dOeTFerO95Yvi9Xq7oavhURMhhzGUDyulYFJltZLztfAhpjIPaOouhuXVXQbh2Eiw/exec"; 
 
-  /* Navigation Logic */
+  /* Screen Navigation */
   function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     window.scrollTo(0,0);
   }
-
   function viewProduct() { showScreen('productScreen'); }
 
-  /* Menu Logic */
+  /* Interactive Sizes */
+  function selectSize(element) {
+    if(element.classList.contains('unavailable')) return;
+    document.querySelectorAll('.size-box').forEach(b => b.classList.remove('selected'));
+    element.classList.add('selected');
+  }
+
+  /* Menu Navigation */
   function openMenu() { document.getElementById('sideMenu').classList.add('open'); document.getElementById('overlay').style.display = 'block'; }
   function closeMenu() { document.getElementById('sideMenu').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
 
-  /* Login Flow Logic */
-  function nextLoginStep(step) {
-    let name = document.getElementById('uName').value;
-    if(!name) return alert("Please enter your name.");
+  /* Login Flow */
+  function nextLoginStep() {
+    if(!document.getElementById('uName').value) return alert("Please enter your name.");
     document.getElementById('step1').classList.remove('active');
     document.getElementById('step2').classList.add('active');
   }
@@ -184,13 +247,12 @@
   function sendOTP() {
     let email = document.getElementById('uEmail').value;
     if(!email) return alert("Please enter your email.");
-
     document.getElementById('uOtp').style.display = 'block';
     document.getElementById('loginBtn').style.display = 'block';
     
     fetch(BACKEND_API_URL + "?action=sendOTP&email=" + email, { method: "POST" })
       .then(res => res.json())
-      .then(data => alert("OTP sent to " + email + "! (Check your spam folder just in case)"));
+      .then(data => alert("OTP sent! (Check spam folder)"));
   }
 
   function completeLogin() {
@@ -208,37 +270,51 @@
           document.getElementById('loginFlow').style.display = 'none';
           document.getElementById('loggedInMenu').style.display = 'block';
           closeMenu();
-          alert("Login Successful!");
         } else {
-          alert("Incorrect OTP. Please try again.");
+          alert("Incorrect OTP.");
         }
       });
   }
 
-  /* Checkout Logic */
-  function confirmDetails() {
-    let mobile = document.getElementById('chkMobile').value;
-    if(!mobile) return alert("Mobile number is compulsory!");
-
-    document.getElementById('checkoutActions').innerHTML = `
-      <p style="width: 100%; text-align: center; color: var(--text); margin-top: 0;">Order Via:</p>
-      <button class="btn-gold" style="background: #333; color: #888; cursor: not-allowed;">Online (Unavailable)</button>
-      <button class="btn-gold" style="background: #25D366; color: white;" onclick="placeOrderWhatsApp()">WhatsApp</button>
-    `;
-  }
-
+  /* Order Processing */
   function placeOrderWhatsApp() {
     let name = document.getElementById('chkName').value;
     let mobile = document.getElementById('chkMobile').value;
     let address = document.getElementById('chkAddress').value;
     
-    let text = `*New Order - Scorpion*\n\n` +
-               `*Customer:* ${name}\n*Mobile:* ${mobile}\n*Address:* ${address}\n\n` +
-               `*Product:* Premium Black Silk Shirt (Size: L)\n` +
-               `*Total Bill:* ₹603\n*Payment Method:* WhatsApp Setup`;
+    if(!mobile || !name || !address) return alert("Please fill out Name, Mobile, and Address to deliver your order.");
+
+    // Get selected payment method
+    let paymentMethod = document.querySelector('input[name="paymentType"]:checked').value;
+    
+    // Get selected size
+    let selectedSize = document.querySelector('.size-box.selected').innerText;
+
+    let text = `*SCORPION - NEW ORDER* 🦂\n` +
+               `------------------------\n` +
+               `*Item:* Premium Black Silk Shirt\n` +
+               `*Size:* ${selectedSize}\n` +
+               `*Total Bill:* ₹603\n` +
+               `*Payment Method:* ${paymentMethod}\n\n` +
+               `*CUSTOMER DETAILS*\n` +
+               `*Name:* ${name}\n` +
+               `*Mobile:* ${mobile}\n` +
+               `*Address:* ${address}`;
                
     let encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/9841870996?text=${encodedText}`, '_blank');
+    
+    // Change button temporarily for UX
+    let btn = document.getElementById('finalOrderBtn');
+    btn.innerHTML = "Opening WhatsApp...";
+    btn.style.background = "#25D366";
+    btn.style.color = "#fff";
+    
+    setTimeout(() => {
+      window.open(`https://wa.me/9841870996?text=${encodedText}`, '_blank');
+      btn.innerHTML = "Confirm & Place Order";
+      btn.style.background = "linear-gradient(45deg, var(--gold), #b5952f)";
+      btn.style.color = "#000";
+    }, 800);
   }
 </script>
 
