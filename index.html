@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scorpion | Premium Men's Clothing</title>
+<style>
+  /* Premium Dark Theme */
+  body { margin: 0; font-family: 'Helvetica Neue', sans-serif; background-color: #fafafa; }
+  .header { display: flex; justify-content: space-between; align-items: center; background: #111; color: gold; padding: 15px 20px; }
+  .logo { font-family: 'Georgia', serif; font-size: 24px; font-weight: bold; font-style: italic; letter-spacing: 2px; }
+  .icons { display: flex; gap: 15px; font-size: 20px; cursor: pointer; }
+  
+  /* Menu Layout */
+  .menu { display: none; position: fixed; top: 0; left: 0; width: 250px; height: 100%; background: #222; color: white; padding: 20px; box-sizing: border-box; }
+  .menu.active { display: block; }
+  .close-btn { text-align: right; cursor: pointer; font-size: 24px; color: gold; }
+  
+  /* Login Section */
+  .login-box { margin-top: 20px; background: #333; padding: 15px; border-radius: 8px; }
+  .login-box input { width: 100%; padding: 8px; margin-top: 10px; border: none; border-radius: 4px; box-sizing: border-box; }
+  .login-box button { width: 100%; padding: 10px; margin-top: 10px; background: gold; color: #111; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+  #otpSection { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div onclick="toggleMenu()" style="cursor: pointer;">☰</div>
+  <div class="logo">Scorpion</div>
+  <div class="icons">
+    <span>🔍</span> <span>🛒</span> </div>
+</div>
+
+<div class="menu" id="sideMenu">
+  <div class="close-btn" onclick="toggleMenu()">×</div>
+  <h3 id="userNameDisplay">Welcome, Guest</h3>
+  
+  <div class="login-box" id="loginFlow">
+    <p style="margin: 0; font-size: 14px;">Sign in to continue</p>
+    <input type="text" id="custName" placeholder="Your Name">
+    <input type="email" id="custEmail" placeholder="Your Email">
+    <button onclick="requestOTP()">Send OTP</button>
+    
+    <div id="otpSection">
+      <input type="number" id="custOtp" placeholder="Enter OTP">
+      <button onclick="verifyLogin()">Login</button>
+    </div>
+  </div>
+
+  <br>
+  <p>📦 Order History</p>
+  <p>📍 Saved Addresses <span style="float: right; color: gold; cursor: pointer;">+</span></p>
+</div>
+
+<script>
+  // Replace with the API URL you get when you deploy the Apps Script as "Anyone with Google Account"
+  const BACKEND_API_URL = "https://script.google.com/macros/s/AKfycbysfoV1pNU3rxfpFC19CvLSsalCGp7Joy5Icv-DhYoh3eInncDywYB5vJquQjl9RTqzLg/exec"; 
+
+  function toggleMenu() {
+    const menu = document.getElementById('sideMenu');
+    menu.classList.toggle('active');
+  }
+
+  function requestOTP() {
+    const email = document.getElementById('custEmail').value;
+    if(!email) return alert("Please enter an email");
+
+    document.getElementById('otpSection').style.display = 'block';
+    
+    // Call Google Sheets API to generate and send email
+    fetch(BACKEND_API_URL + "?action=sendOTP&email=" + email, { method: "POST" })
+      .then(res => res.json())
+      .then(data => alert("OTP Sent to your email! (Check spam just in case)"));
+  }
+
+  function verifyLogin() {
+    const email = document.getElementById('custEmail').value;
+    const otp = document.getElementById('custOtp').value;
+    const name = document.getElementById('custName').value;
+
+    fetch(BACKEND_API_URL + "?action=verifyOTP&email=" + email + "&otp=" + otp, { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === "success") {
+          document.getElementById('userNameDisplay').innerText = "Hello, " + name;
+          document.getElementById('loginFlow').style.display = "none"; // Hide login box
+          alert("Login Successful!");
+        } else {
+          alert("Incorrect OTP");
+        }
+      });
+  }
+</script>
+
+</body>
+</html>
